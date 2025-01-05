@@ -1,0 +1,40 @@
+<group name="custom">
+	<rule id="100001" level="15">
+	  <if_sid>60009</if_sid>
+	  <field name="win.system.providerName"></field>
+	  <description></description>
+	</rule>
+	<rule id="100002" level="15">
+	  <if_sid>60009</if_sid>
+	  <field name="win.system.providerName"></field>
+	  <description></description>
+	</rule>
+	<rule id="100003" level="15">
+	  <if_sid>60009</if_sid>
+	  <field name="win.system.providerName"></field>
+	  <description></description>
+	</rule>
+    <rule id="100004" level="3">
+        <decoded_as></decoded_as>
+        <description></description>
+    </rule>
+    <rule id="100005" level="12">
+        <decoded_as></decoded_as>
+        <field name="" negate="yes" type="PCRE2"></field>
+        <description></description>
+    </rule>
+    <rule id="100007" level="12">
+        <decoded_as></decoded_as>
+        <field name="" negate="yes" type="PCRE2"></field>
+        <description></description>
+    </rule>
+    <rule id="100008" level="15">
+        <decoded_as></decoded_as>
+        <field name="" type="PCRE2"></field>
+        <description></description>
+    </rule>
+	<rule id="100009" level="15">
+        <decoded_as></decoded_as>
+        <description></description>
+    </rule>
+</group>
