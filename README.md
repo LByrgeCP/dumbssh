@@ -16,7 +16,7 @@ Discord: cologuard
 
 red team please have mercy
 
-holto is big and strong ♥
+hulto is big and strong ♥
 
 :prayge:
 
