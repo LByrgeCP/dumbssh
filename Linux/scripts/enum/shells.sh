@@ -1,4 +1,5 @@
 #!/bin/sh
+# KaliPatriot | TTU CCDC | Landon Byrge
 
 # get hashes of all shells in /etc/passwd
 

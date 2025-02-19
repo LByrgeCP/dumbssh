@@ -1,8 +1,15 @@
 #!/bin/sh
+# KaliPatriot | TTU CCDC | Landon Byrge
 
 echo "Checking for execution of arbitrary commands in PAM configuration"
 echo "======="
 grep -ER "^[^#]*pam_exec.so" /etc/pam.d/
+echo ""
+echo "======="
+
+echo "Checking for pam_succeed_if in PAM configuration"
+echo "======="
+grep -ER "^[^#]*pam_succeed_if.so" /etc/pam.d/
 echo ""
 echo "======="
 
@@ -134,3 +141,9 @@ fi
 
 echo ""
 echo "======="
+
+if [ -n "PRINTAUTH" ]; then
+    echo "Printing pam authentication configuration"
+    echo "======="
+    grep -ER "^\s*[^#]" /etc/pam.d/*-auth
+fi

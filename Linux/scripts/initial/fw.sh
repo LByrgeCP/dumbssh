@@ -64,6 +64,7 @@ fi
 if [ ! -z "$ipt" ]; then
     iptables-save > /opt/rules.v4
     iptables-save > $BCK/rules.v4.old
+
     ALLOW
 
     $ipt -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
@@ -109,6 +110,7 @@ if [ ! -z "$ipt" ]; then
     # Save rules
     iptables-save > /opt/rules.v4
     iptables-save > $BCK/rules.v4
+    iptables-save
 elif [ "$IS_BSD" = true ]; then
     ALLOW
 
@@ -138,5 +140,6 @@ elif [ "$IS_BSD" = true ]; then
 
     kldload pf
     pfctl -f /etc/pf.conf
+    cat /etc/pf.conf
     pfctl -e
 fi

@@ -1,5 +1,6 @@
 #!/bin/sh
 # @d_tranman/Nigel Gerald/Nigerald
+# KaliPatriot | TTU CCDC | Landon Byrge
 
 IS_RHEL=false
 IS_DEBIAN=false
@@ -461,6 +462,41 @@ else
     for i in $TRUE; do
         ${ECHO} "${YELLOW}$i hash: ${NC}$(sha256sum $i | cut -d' ' -f1)""\n"
     done
+fi
+
+# Process Information
+${ECHO} "\n${GREEN}#############PROCESS INFORMATION############${NC}\n"
+PROCESS=$(ps -ef --forest || ps auxw || ps -ef)
+${ECHO} "${YELLOW}$PROCESS${NC}\n"
+
+# Network Information
+${ECHO} "\n${GREEN}#############EXTRA NETWORK INFORMATION############${NC}\n"
+${ECHO} "${BLUE}[+] Routing Table${NC}"
+${ECHO} "${YELLOW}$(route -n)${NC}\n"
+${ECHO} "${BLUE}[+] ARP Table${NC}"
+${ECHO} "${YELLOW}$(arp -a)${NC}\n"
+
+# Listening Ports
+${ECHO} "\n${GREEN}#############PORTS############${NC}\n"
+if command -v sockstat >/dev/null ; then
+    LIST_CMD="sockstat -l"
+    ESTB_CMD="sockstat -46c"
+elif command -v ss >/dev/null ; then
+    LIST_CMD="ss -blunt -p"
+    ESTB_CMD="ss -buntp"
+elif command -v netstat >/dev/null ; then
+    LIST_CMD="netstat -tulpn"
+    ESTB_CMD="netstat -tupwn"
+fi
+
+if [ -z "$LIST_CMD" ]; then
+    ${ECHO} "${RED}[-] No ss, netstat, or sockstat found. ${NC}]"
+else
+    echo "\n${BLUE}[+] Listening Ports${NC}"
+    $LIST_CMD
+    
+    echo "\n${BLUE}[+] Established Connections${NC}"
+    $ESTB_CMD
 fi
 
 

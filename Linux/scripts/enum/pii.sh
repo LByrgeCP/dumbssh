@@ -1,4 +1,5 @@
 #!/bin/sh
+# KaliPatriot | TTU CCDC | Landon Byrge
 
 if ! [ -z "$1" ]; then
     find_path="$1"
@@ -24,7 +25,7 @@ grep_for_credit_card_numbers() {
     grep -RPo '(?:\d{4}-?){3}\d{4}|(?:\d{4}\s?){3}\d{4}|(?:\d{4}){4}' $1 2>/dev/null
 }
 
-grep_for_vehicle_regisration_numbers() {
+grep_for_vehicle_registration_numbers() {
     if ! [ -z "$VH"]; then
         grep -RPo '[A-Z]{1,2}[0-9]{1,2}\s?[A-Z]{1,3}\s?[0-9]{1,4}' $1 2>/dev/null
     fi

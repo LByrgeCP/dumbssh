@@ -46,7 +46,7 @@ for user in $(cat /etc/passwd | grep -E "/bin/.*sh" | cut -f1 -d':'); do
     elif [ "$user" = "$SSHUSER" ]; then
         CHANGEPASSWORD $user $PASS
         echo "$user,$PASS"
-    elif echo ",$IGNOREUSERS," | grep -qw ",$user,"; then
+    elif echo "$IGNOREUSERS" | grep -q "$user"; then
         continue
     else
         CHANGEPASSWORD $user $pass

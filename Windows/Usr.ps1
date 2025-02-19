@@ -46,6 +46,10 @@ if ($DomainController) {
             Write-Host "[SKIPPED] Skipped changing $User's password." -ForegroundColor Gray
             continue
         }
+        if (($User -match "seccdc") -or ($User -match "blackteam")) {
+            Write-Host "[SKIPPED] Skipped changing $User's password." -ForegroundColor Gray
+            continue
+        }
         try {
             Set-AdAccountPassword -Identity "$User" -NewPassword (ConvertTo-SecureString -AsPlainText $UserPassword -Force) -Reset -ErrorAction Stop
             Write-Host "[SUCCESS] Successfully changed "$User"'s password." -ForegroundColor Green
@@ -57,38 +61,38 @@ if ($DomainController) {
     }
 
     try {
-        $UserExists = Get-ADUser -Filter {SAMAccountName -eq "ttuccdc"}
+        $UserExists = Get-ADUser -Filter {SAMAccountName -eq "ccdcuser"}
         
         if ($UserExists) {
-            Set-ADAccountPassword -Identity "ttuccdc" -NewPassword (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -Reset -ErrorAction Stop
+            Set-ADAccountPassword -Identity "ccdcuser" -NewPassword (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -Reset -ErrorAction Stop
         }
 
         if (!$UserExists) {
-            New-ADUser -Name "ttuccdc" -AccountPassword (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -Enabled $True -ErrorAction Stop
-            Write-Host "[SUCCESS] Successfully created ttuccdc user on $env:ComputerName" -ForegroundColor Green
+            New-ADUser -Name "ccdcuser" -AccountPassword (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -Enabled $True -ErrorAction Stop
+            Write-Host "[SUCCESS] Successfully created ccdcuser user on $env:ComputerName" -ForegroundColor Green
         }
 
         try {
-            Add-ADGroupMember -Identity "Administrators" -Members "ttuccdc"
+            Add-ADGroupMember -Identity "Administrators" -Members "ccdcuser"
         }
         catch {
-            Write-Host "[INFO] ttuccdc is already in Administrators group." -ForegroundColor Yellow
+            Write-Host "[INFO] ccdcuser is already in Administrators group." -ForegroundColor Yellow
         }
         try {
-            Add-ADGroupMember -Identity "Remote Desktop Users" -Members "ttuccdc"
+            Add-ADGroupMember -Identity "Remote Desktop Users" -Members "ccdcuser"
         }
         catch {
-            Write-Host "[INFO] ttuccdc is already in Remote Desktop Users Group." -ForegroundColor Yellow
+            Write-Host "[INFO] ccdcuser is already in Remote Desktop Users Group." -ForegroundColor Yellow
         }
         try {
-            Add-ADGroupMember -Identity "Domain Admins" -Members "ttuccdc"
+            Add-ADGroupMember -Identity "Domain Admins" -Members "ccdcuser"
         }
         catch {
-            Write-Host "[INFO] ttuccdc is already in Domain Admins Group." -ForegroundColor Yellow
+            Write-Host "[INFO] ccdcuser is already in Domain Admins Group." -ForegroundColor Yellow
         }
     }
     catch {
-        Write-Host "[ERROR] Failed to create user ttuccdc." -ForegroundColor Red
+        Write-Host "[ERROR] Failed to create user ccdcuser." -ForegroundColor Red
         Set-ADAccountPassword -Identity "Administrator" -NewPassword (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -Reset
         Enable-ADAccount -Identity "Administrator"
     }
@@ -98,6 +102,11 @@ else {
         $Users = Get-LocalUser | Select-Object -ExpandProperty Name
         foreach ($User in $Users) {
             if ($Exclude -contains $user) {
+                Write-Host "[SKIPPED] Skipped changing $User's password." -ForegroundColor Gray
+                continue
+            }
+            
+            if (($User -match "seccdc") -or ($User -match "blackteam")) {
                 Write-Host "[SKIPPED] Skipped changing $User's password." -ForegroundColor Gray
                 continue
             }
@@ -118,6 +127,10 @@ else {
                 Write-Host "[SKIPPED] Skipped changing $User's password." -ForegroundColor Gray
                 continue
             }
+            if (($User -match "seccdc") -or ($User -match "blackteam")) {
+                Write-Host "[SKIPPED] Skipped changing $User's password." -ForegroundColor Gray
+                continue
+            }
             try {
                 net user $User $UserPassword -ErrorAction Stop
                 Write-Host "[SUCCESS] Successfully changed $User's password." -ForegroundColor Green
@@ -132,56 +145,56 @@ else {
     try {
 
         try {
-            $UserExists = [bool](Get-LocalUser -Name "ttuccdc")
+            $UserExists = [bool](Get-LocalUser -Name "ccdcuser")
         }
         catch {
-            $UserExists = [bool](Get-WmiObject -Class Win32_UserAccount -Filter "Name='ttuccdc'")
+            $UserExists = [bool](Get-WmiObject -Class Win32_UserAccount -Filter "Name='ccdcuser'")
         }
 
         if ($UserExists) {
             try {
-            Set-LocalUser -Name "ttuccdc" -Password (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -AccountNeverExpires
+            Set-LocalUser -Name "ccdcuser" -Password (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -AccountNeverExpires
             }
             catch {
-            net user ttuccdc $AdminPassword
+            net user ccdcuser $AdminPassword
             }
         }
 
         if (!$UserExists) {
             try {
-            New-LocalUser -Name "ttuccdc" -Password (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -AccountNeverExpires
+            New-LocalUser -Name "" -Password (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -AccountNeverExpires
             }
             catch {
-            net user ttuccdc $AdminPassword /add
+            net user ccdcuser $AdminPassword /add
             }
-            Write-Host "[SUCCESS] Successfully created ttuccdc user on $env:ComputerName" -ForegroundColor Green
+            Write-Host "[SUCCESS] Successfully created ccdcuser user on $env:ComputerName" -ForegroundColor Green
         }
 
         try {
-            Add-LocalGroupMember -Group "Administrators" -Member "ttuccdc" -ErrorAction Stop
+            Add-LocalGroupMember -Group "Administrators" -Member "ccdcuser" -ErrorAction Stop
         } 
         catch {
             try {
-            net localgroup Administrators ttuccdc /add
+            net localgroup Administrators ccdcuser /add
             }
             catch {
-            Write-Host "[INFO] ttuccdc is already in Administrators." -ForegroundColor Yellow
+            Write-Host "[INFO] ccdcuser is already in Administrators." -ForegroundColor Yellow
             }
         }
         try {
-            Add-LocalGroupMember -Group "Remote Desktop Users" -Member "ttuccdc" -ErrorAction Stop
+            Add-LocalGroupMember -Group "Remote Desktop Users" -Member "ccdcuser" -ErrorAction Stop
         }
         catch {
             try {
-            net localgroup "Remote Desktop Users" ttuccdc /add
+            net localgroup "Remote Desktop Users" ccdcuser /add
             }
             catch {
-            Write-Host "[INFO] ttuccdc is already in Remote Desktop Users." -ForegroundColor Yellow
+            Write-Host "[INFO] ccdcuser is already in Remote Desktop Users." -ForegroundColor Yellow
             }
         }
         }
         catch {
-        Write-Host "[ERROR] Failed to create user ttuccdc." -ForegroundColor Red
+        Write-Host "[ERROR] Failed to create user ccdcuser." -ForegroundColor Red
         try {
             Set-LocalUser -Name "Administrator" -Password (ConvertTo-SecureString -AsPlainText $AdminPassword -Force) -AccountNeverExpires
         }

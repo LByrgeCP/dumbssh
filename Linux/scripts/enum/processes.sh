@@ -1,4 +1,5 @@
 #!/bin/sh
+# KaliPatriot | TTU CCDC | Landon Byrge
 
 echo "Running 'ps -ef --forest'..."
 ps -ef --forest 2>/dev/null

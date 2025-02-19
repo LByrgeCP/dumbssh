@@ -1,5 +1,6 @@
 #!/bin/sh
 # @d_tranman/Nigel Gerald/Nigerald
+# KaliPatriot | TTU CCDC | Landon Byrge
 # This pam script sucked @dsu
 # I'm going to fix it
 # I'm going to make it better
@@ -47,6 +48,9 @@ if command -v pkg >/dev/null || command -v pkg_info >/dev/null; then
 fi
 
 ALLOW() {
+    if [ -z $DISFW ]; then
+        return
+    fi
     if [ "$IS_BSD" = true ]; then
         pfctl -d
     else
@@ -55,6 +59,9 @@ ALLOW() {
 }
 
 DENY() {
+    if [ -z $DISFW ]; then
+        return
+    fi
     if [ "$IS_BSD" = true ]; then
         pfctl -e
     else
@@ -226,7 +233,7 @@ elif command -v slapt-get >/dev/null || ( cat /etc/os-release | grep -i slackwar
   SLACK
 elif command -v pacman >/dev/null ; then
   ARCH
-elif command -v pkg >/dev/null || command -v pkg_info >/dev/null; then
+elif command -v pkg >/dev/null || command -v pkg_add >/dev/null; then
     BSD
 fi
 

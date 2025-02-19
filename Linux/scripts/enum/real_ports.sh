@@ -1,4 +1,5 @@
 #!/bin/sh
+# KaliPatriot | TTU CCDC | Landon Byrge
 if command -v sockstat >/dev/null ; then
     LIST_CMD="sockstat -l"
     ESTB_CMD="sockstat -46c"

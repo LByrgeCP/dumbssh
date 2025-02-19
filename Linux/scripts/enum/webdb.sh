@@ -1,5 +1,6 @@
 #!/bin/sh
 # @d_tranman/Nigel Gerald/Nigerald
+# KaliPatriot | TTU CCDC | Landon Byrge
 
 IS_RHEL=false
 IS_DEBIAN=false

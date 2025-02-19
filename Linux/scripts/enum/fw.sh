@@ -1,8 +1,14 @@
 #!/bin/sh
-if command -v pkg >/dev/null || command -v pkg_info >/dev/null; then
+# KaliPatriot | TTU CCDC | Landon Byrge
+
+if command -v pfctl >/dev/null; then
     pfctl -s rules
     pfctl -s info
 else
     ipt=$(command -v iptables || command -v /sbin/iptables || command -v /usr/sbin/iptables)
-    $ipt -L
+    if [ -z "$ipt" ]; then
+        echo "NO IPTABLES OR PFCTL ON THIS SYSTEM, GOOD LUCK"
+        exit 1
+    fi
+    $ipt -vnL
 fi

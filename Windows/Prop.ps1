@@ -3,14 +3,45 @@ param(
     [String]$Hosts = '',
 
     [Parameter(Mandatory=$false)]
-    [System.Management.Automation.PSCredential]$Cred = $Global:Cred,
-
-    [Parameter(Mandatory=$false)]
     [Int]$Timeout = 3000,
 
     [Parameter(Mandatory=$false)]
     [Switch]$Purge
 )
+
+Remove-Variable -Name Computers -Scope Global -ErrorAction SilentlyContinue;
+$Computers = @()
+
+class Host {
+    [string]$IP
+    [string]$Username
+    [string]$Password
+    [string]$Comment
+
+    Host([string]$ip, [string]$username, [string]$password, [string]$comment) {
+        $this.IP = $ip
+        $this.Username = $username
+        $this.Password = $password
+        $this.Comment = $comment
+    }
+
+    # Override ToString method to return the IP address
+    [string] ToString() {
+        return $this.IP
+    }
+}
+
+try {
+    $CSVContent = Import-Csv -Path $Hosts
+    foreach ($Row in $CSVContent) {
+        $Computers += [Host]::new($Row.IP, $Row.Username, $Row.Password, $Row.Comment)
+    }
+}
+catch {
+    Write-Host "[ERROR] Failed to get computers from file" -ForegroundColor Red
+    exit
+}
+
 function Test-Port {
     Param(
         [string]$Ip,
@@ -47,26 +78,33 @@ function Test-Port {
     }
 }
 
-
-if (!$Purge -and $Hosts -ne '' -and $Cred -ne $null) {
-    try {
-        $Computers = Get-Content $Hosts
-    }
-    catch {
-        Write-Host "[ERROR] Failed to get computers from file" -ForegroundColor Red
-        exit
-    }
+if (!$Purge -and $Hosts -ne '') {
     
     $DriveLetters = @()
     $DriveLetters = 65..90 | %{[char]$_}
     $i = 25
     
     foreach ($Computer in $Computers) {
+        if ($Computer.Username -eq '' -or $Computer.Password -eq '') {
+            $Cred = Get-Credential
+            break
+        }
+    }
+
+    foreach ($Computer in $Computers) {
+
+        if ($Computer.Username -eq '' -or $Computer.Password -eq '') {
+            Write-Host "[ERROR] No credentials specified for $Computer" -ForegroundColor Red
+        }
+        else {
+            $Cred = New-Object System.Management.Automation.PSCredential ($Computer.Username, (ConvertTo-SecureString $Computer.Password -AsPlainText -Force))
+        }
+
         if ($i -ge 0) {
-            if (Test-Port -Ip $Computer -Timeout $Timeout -Verbose) {
-                Write-Host "[INFO] $Computer SMB is online... Copying" -ForegroundColor Green
-                New-PSDrive -Name $DriveLetters[$i] -PSProvider FileSystem -Root \\$Computer\C$ -Persist -Credential $Cred
-                Robocopy.exe .\bins \\$Computer\C$\Windows\System32\ /COMPRESS /MT:16 /R:1 /W:1 /UNILOG+:robo.log /TEE /s /xx
+            if (Test-Port -Ip $Computer.IP -Timeout $Timeout -Verbose) {
+                Write-Host "[INFO] $($Computer.IP) SMB is online... Copying" -ForegroundColor Green
+                New-PSDrive -Name $DriveLetters[$i] -PSProvider FileSystem -Root \\$($Computer.IP)\C$ -Credential $Cred
+                Robocopy.exe .\bins \\$($Computer.IP)\C$\Windows\System32\ /MT:16 /R:1 /W:1 /UNILOG+:robo.log /TEE /s /xx
             }
             else {
                 Write-Host "[ERROR] Failed to move bins to $Computer" -ForegroundColor Red

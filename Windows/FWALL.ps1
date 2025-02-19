@@ -10,12 +10,17 @@ if($Argsarray.Count -lt 3){
     break
 }
 $Dispatcher = $Argsarray[0]; 
-$Localnetwork = $Argsarray[1];
+$allowedNetworks = $Argsarray[1];
+$allowedNetworks = $allowedNetworks -split ','
+write-Host $allowedNetworks
 $Notnats = $Argsarray[2];
 
 
 
+
 netsh advfirewal export "C:\Firewall.wfw"
+
+
 
 
 if(-not(Get-Command -Name New-NetFirewallRule -ErrorAction SilentlyContinue) -or -not(Get-Command Get-ScheduledTask)){
@@ -39,14 +44,20 @@ if(-not(Get-Command -Name New-NetFirewallRule -ErrorAction SilentlyContinue) -or
 
     netsh advfirewall firewall delete rule name=all
 
+
     netsh advfirewall firewall add rule name="WINRM 80" dir=in protocol=TCP localport=80 remoteip=$Dispatcher action=allow
     netsh advfirewall firewall add rule name="WINRM 5985" dir=in protocol=TCP localport=5985 remoteip=$Dispatcher action=allow
     netsh advfirewall firewall add rule name="WINRM 5986" dir=in protocol=TCP localport=5986 remoteip=$Dispatcher action=allow
 
-    netsh advfirewall firewall add rule name="Remote Desktop" dir=in protocol=TCP localport=3389 remoteip=$Dispatcher action=allow
+    netsh advfirewall firewall add rule name="Remote Desktop" dir=in protocol=TCP localport=3389  action=allow
 
-    netsh advfirewall firewall add rule name="Local Network" dir=in protocol=TCP  remoteip=$Localnetwork action=allow
-    netsh advfirewall firewall add rule name="Local Network" dir=out protocol=TCP  remoteip=$Localnetwork action=allow
+
+    foreach($network in $allowedNetworks){
+        netsh advfirewall firewall add rule name="Local Network" dir=in protocol=TCP  remoteip=$network action=allow
+        netsh advfirewall firewall add rule name="Local Network" dir=out protocol=TCP  remoteip=$network action=allow
+    }
+
+    
 
     if($Notnats -ne "NOTNATS"){
         netsh advfirewall firewall add rule name="NotNats" dir=in protocol=any remoteip=$Notnats action=allow
@@ -87,10 +98,12 @@ else{
 
     New-NetFirewallRule -DisplayName "WinRM" -Direction Inbound -Protocol TCP -LocalPort 80,5985,5986 -RemoteAddress $Dispatcher
 
-    New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress $Dispatcher
+    New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 
 
-    New-NetFirewallRule  -DisplayName "Local Network" -Direction Inbound -Protocol TCP  -RemoteAddress $Localnetwork
-    New-NetFirewallRule  -DisplayName "Local Network" -Direction Outbound -Protocol TCP  -RemoteAddress $Localnetwork
+    foreach($network in $allowedNetworks){
+        New-NetFirewallRule  -DisplayName "Local Network" -Direction Inbound -Protocol TCP  -RemoteAddress $network
+        New-NetFirewallRule  -DisplayName "Local Network" -Direction Outbound -Protocol TCP  -RemoteAddress $network
+    }
 
     if($Notnats -ne "NOTNATS"){
         New-NetFirewallRule  -DisplayName "NotNats" -Direction Inbound -Protocol any  -RemoteAddress $Notnats
@@ -102,3 +115,5 @@ else{
 
 
 }
+
+

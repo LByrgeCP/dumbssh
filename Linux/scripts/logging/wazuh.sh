@@ -1,4 +1,5 @@
 #!/bin/sh
+# KaliPatriot | TTU CCDC | Landon Byrge
 
 if [ -z "$WAZUH_MANAGER" ] || [ -z "$DOWNLOAD_URL" ]; then
   echo "ERROR: You must set WAZUH_MANAGER and DOWNLOAD_URL."

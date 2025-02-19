@@ -1,5 +1,6 @@
 #!/bin/sh
 # @d_tranman/Nigel Gerald/Nigerald
+# KaliPatriot | TTU CCDC | Landon Byrge
 
 if [ -z "$BCK" ]; then
     BCK="/root/.cache"
@@ -7,51 +8,32 @@ fi
 
 BCK=$BCK/initial
 
+mkdir -p $BCK
+
 sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
 setenforce 0 2>/dev/null
 
-ipt=$(command -v iptables || command -v /sbin/iptables || command -v /usr/sbin/iptables)
-IS_BSD=false
-
-if command -v pkg >/dev/null || command -v pkg_info >/dev/null; then
-    IS_BSD=true
-fi
-
-ALLOW() {
-    if [ "$IS_BSD" = true ]; then
-        pfctl -d
-    else
-        $ipt -P OUTPUT ACCEPT
-    fi
-}
-
-DENY() {
-    if [ "$IS_BSD" = true ]; then
-        pfctl -e
-    else
-        $ipt -P OUTPUT DROP
-    fi
-}
-
 RHEL(){
     yum check-update -y >/dev/null
-    yum install net-tools iproute sed curl wget bash gcc gzip make procps socat tar -y > /dev/null
 
-    yum install auditd -y > /dev/null
-    yum install rsyslog -y > /dev/null
+    for i in "sudo net-tools iptables iproute sed curl wget bash gcc gzip make procps socat tar auditd rsyslog tcpdump unhide strace"; do
+        yum install -y $i
+    done
 }
 
 SUSE(){
-    zypper -n install -y net-tools iproute2 sed curl wget bash gcc gzip make procps socat tar >/dev/null
-    
-    zypper -n install -y audit rsyslog >/dev/null
+
+    for i in "sudo net-tools iptables iproute2 sed curl wget bash gcc gzip make procps socat tar auditd rsyslog"; do
+        zypper -n install -y $i
+    done
 }
 
 DEBIAN(){
     apt-get -qq update >/dev/null
-    apt-get -qq install net-tools iproute2 sed curl wget bash gcc gzip make procps socat tar tcpdump -y >/dev/null
 
-    apt-get -qq install auditd rsyslog -y >/dev/null
+    for i in "sudo net-tools iptables iproute2 sed curl wget bash gcc gzip make procps socat tar auditd rsyslog tcpdump unhide strace"; do
+        apt-get -qq install $i -y
+    done
 }
 
 UBUNTU(){
@@ -61,32 +43,34 @@ UBUNTU(){
 ALPINE(){
     echo "http://mirrors.ocf.berkeley.edu/alpine/v3.16/community" >> /etc/apk/repositories
     apk update >/dev/null
-    apk add iproute2 net-tools curl wget bash iptables util-linux-misc gcc gzip make procps socat tar tcpdump >/dev/null
-
-    apk add audit rsyslog >/dev/null
+    for i in "sudo iproute2 net-tools curl wget bash iptables util-linux-misc gcc gzip make procps socat tar tcpdump audit rsyslog"; do
+        apk add $i
+    done
 }
 
 SLACK(){
     slapt-get --update
-    slapt-get --install net-tools iproute2 sed curl wget bash gcc gzip make procps socat tar tcpdump >/dev/null
 
-    slapt-get --install auditd rsyslog >/dev/null
+
+    for i in "net-tools iptables iproute2 sed curl wget bash gcc gzip make procps socat tar tcpdump auditd rsyslog"; do
+        slapt-get --install $i
+    done
 }
 
 ARCH(){
     pacman -Syu --noconfirm >/dev/null
-    pacman -S --noconfirm net-tools iproute2 sed curl wget bash gcc gzip make procps socat tar tcpdump >/dev/null
 
-    pacman -S --noconfirm auditd rsyslog >/dev/null
+    for i in "sudo net-tools iptables iproute2 sed curl wget bash gcc gzip make procps socat tar tcpdump auditd rsyslog"; do
+        pacman -S --noconfirm $i
+    done
 }
 
 BSD(){
     pkg update -f >/dev/null
-	pkg install -y wget
-    pkg install -y curl bash gcc gmake gzip socat iftop rsyslog tcpdump >/dev/null
+    for i in "sudo bash net-tools iproute2 sed curl wget bash gcc gzip make procps socat tar tcpdump auditd rsyslog firewall"; do
+        pkg install -y $i || pkg install $i
+    done
 }
-
-ALLOW
 
 if command -v yum >/dev/null ; then
   RHEL
@@ -108,12 +92,12 @@ elif command -v pkg >/dev/null || command -v pkg_info >/dev/null; then
     BSD
 fi
 
-ALLOW
-
-( wget -O install-snoopy.sh https://github.com/a2o/snoopy/raw/install/install/install-snoopy.sh || \
-  curl -o install-snoopy.sh https://github.com/a2o/snoopy/raw/install/install/install-snoopy.sh || \
-  fetch -o install-snoopy.sh https://github.com/a2o/snoopy/raw/install/install/install-snoopy.sh ) && \
-chmod 755 install-snoopy.sh && sudo ./install-snoopy.sh stable
+# Thanks ippsec, if ur reading this can I get a photo at regionals? - KaliPatriot
+( wget -O install-snoopy.sh https://raw.githubusercontent.com/a2o/snoopy/install/install/install-snoopy.sh || \
+  curl -o install-snoopy.sh https://raw.githubusercontent.com/a2o/snoopy/install/install/install-snoopy.sh || \
+  fetch -o install-snoopy.sh hhttps://raw.githubusercontent.com/a2o/snoopy/install/install/install-snoopy.sh ) && \
+chmod 755 install-snoopy.sh
+sudo ./install-snoopy.sh stable
 
 
 # change /etc/snoopy.ini to point to $BCK/snoopy.log
@@ -121,8 +105,6 @@ echo "[snoopy]" > /etc/snoopy.ini
 echo "output = file:$BCK/snoopy.log" >> /etc/snoopy.ini
 touch $BCK/snoopy.log
 chmod 666 $BCK/snoopy.log
-
-DENY
 
 # backup /etc/passwd
 mkdir $BCK
@@ -218,6 +200,6 @@ fi
 file=$(find /etc -maxdepth 2 -type f -name 'php-fpm*' -print -quit)
 
 if [ -d /etc/php/*/fpm ] || [ -n "$file" ]; then
-        $sys *php* restart || $sys restart *php*
+        $sys '*php*' restart || $sys restart '*php*'
         echo php-fpm restarted
 fi

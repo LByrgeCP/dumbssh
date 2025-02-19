@@ -1,4 +1,5 @@
 #!/bin/sh
+# KaliPatriot | TTU CCDC | Landon Byrge
 if [ -z "$KEY" ]; then
     echo "KEY not defined, exitting."
     exit 1
